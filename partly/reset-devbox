@@ -1,0 +1,37 @@
+#!/bin/bash
+# FILEPATH: /home/josiah/.scripts/reset-devbox
+
+set -e
+set -o pipefail
+
+LOGFILE="/home/josiah/.scripts/reset-devbox.log"
+DOCKER_USER="robot\$devbox"
+DOCKER_PASS="$(cat ~/.docker/.env)"
+
+echo "Starting devbox reset..." | tee -a $LOGFILE
+
+if ! docker info >/dev/null 2>&1; then
+    echo "Docker is not running. Please start Docker and try again." | tee -a $LOGFILE
+    exit 1
+fi
+
+# Check if there are any docker containers running
+if [ "$(docker ps -q)" ]; then
+    echo "Stopping running containers..." | tee -a $LOGFILE
+    # shellcheck disable=SC2046
+    docker stop $(docker ps -a -q) || echo "Error stopping containers" >&2
+fi
+
+# Remove the latest devbox image (harbor.partly.pro/partly/devbox:latest)
+echo "Removing devbox image..." | tee -a $LOGFILE
+docker rmi harbor.partly.pro/partly/devbox:latest || echo "Error removing devbox image" >&2
+
+yes | docker system prune --all --volumes || echo "Error pruning system" >&2
+rm -f ~/.docker/config.json
+docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" harbor.partly.pro || echo "Error logging in to Docker" >&2
+
+sleep 1
+
+/home/josiah/Documents/partly/devbox zsh || echo "Error starting zsh" >&2
+
+echo "Devbox reset completed." | tee -a $LOGFILE

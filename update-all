@@ -1,0 +1,28 @@
+#!/bin/bash
+# FILEPATH: /home/josiah/.scripts/build-devbox
+
+set -e
+set -o pipefail
+
+# Perform System Upgrades
+sudo apt-get update
+sudo apt-get upgrade -y
+sudo apt-get dist-upgrade -y
+sudo apt-get autoremove -y
+sudo apt-get autoclean
+
+# Update snaps
+sudo snap refresh
+
+# Upgrade Rust
+rustup update
+cargo install-update -a
+
+# Upgrade Gcloud
+echo "yes" | /home/josiah/.google-cloud-sdk/bin/gcloud components update
+
+# Upgrade NPM
+# TODO
+
+echo "System Upgrades Complete"
+exit 0

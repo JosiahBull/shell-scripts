@@ -1,6 +1,7 @@
 #!/bin/bash
 #Josiah Bull - 23/11/2021
 #This is a script which will convert an ova file to qcow2
+
 if [ -z "$1" ] && [ test -f "$1" ]
 then
     echo "Invalid or no file provided."
