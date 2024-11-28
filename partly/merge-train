@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # PYTHON_ARGCOMPLETE_OK
 
-# Josiah Bull - 18/04/2024
+# Author: Josiah Bull <josiah.bull7@gmail.com>
+# License: MIT/Apache-2.0
+
 # This script aims to automate the rebasing and merging of GL merge requests, it will:
 # 1. Automatically poll a provided merge request for changes.
 # 2. It will automatically trigger a rebase of the merge request if it is out of date.
@@ -19,26 +21,10 @@ import time
 from typing import Final
 import argparse
 
-try:
-    import colorama
-except ImportError:
-    print("colorama is not installed, installing...")
-    os.system("pip install colorama")
-try:
-    import art
-except ImportError:
-    print("art is not installed, installing...")
-    os.system("pip install art")
-try:
-    import gitlab
-except ImportError:
-    print("python-gitlab is not installed, installing...")
-    os.system("pip install python-gitlab")
-try:
-    import argcomplete
-except ImportError:
-    print("argcomplete is not installed, installing...")
-    os.system("pip install argcomplete")
+import colorama
+import art
+import gitlab
+import argcomplete
 
 # -------------------------------------------- CONFIG -------------------------------------------- #
 

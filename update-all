@@ -1,28 +1,72 @@
-#!/bin/bash
-# FILEPATH: /home/josiah/.scripts/build-devbox
+#!/usr/bin/env bash
 
-set -e
-set -o pipefail
+# Author: Josiah Bull <josiah.bull7@gmail.com>
+# License: MIT/Apache-2.0
 
-# Perform System Upgrades
-sudo apt-get update
-sudo apt-get upgrade -y
-sudo apt-get dist-upgrade -y
-sudo apt-get autoremove -y
-sudo apt-get autoclean
+# Wrapper script to update all installed packages on a system, wherever possible
 
-# Update snaps
-sudo snap refresh
+set -o errexit -o pipefail -o noclobber -o nounset
 
-# Upgrade Rust
-rustup update
-cargo install-update -a
+if [ "$EUID" -ne 0 ]
+then
+  echo "Not running as root, attempting to elevate... Press Ctrl+C to cancel" >&2
+  sleep 2
+  if [ -x "$(command -v sudo)" ]; then
+    exec sudo -- "$0" "$@"
+  else
+    exec sudo su -s "$0" "$@"
+  fi
+fi
 
-# Upgrade Gcloud
-echo "yes" | /home/josiah/.google-cloud-sdk/bin/gcloud components update
+# Update System
+# Ubuntu
+if [ -f /etc/lsb-release ]; then
+  apt-get update
+  apt-get upgrade -y
+  apt-get dist-upgrade -y
+  apt-get autoremove -y
+  apt-get autoclean
+# Fedora
+elif [ -f /etc/fedora-release ]; then
+  dnf check-update
+  dnf upgrade --refresh -y
+  dnf autoremove -y
+  dnf clean all
+else
+  echo "Unsupported distribution" >&2
+  exit 1
+fi
 
-# Upgrade NPM
-# TODO
+# Update Snaps
+if [ -x "$(command -v snap)" ]; then
+  snap refresh
+fi
 
-echo "System Upgrades Complete"
+# Update Flatpaks
+if [ -x "$(command -v flatpak)" ]; then
+  flatpak update
+fi
+
+# Update Pip
+if [ -x "$(command -v pip)" ]; then
+  pip install --upgrade pip
+fi
+
+# Update Rust
+if [ -x "$(command -v rustup)" ]; then
+  rustup update
+  cargo install-update -a
+fi
+
+# Update NPM Packages
+if [ -x "$(command -v npm)" ]; then
+  npm update -g
+fi
+
+# Update Gcloud
+if [ -x "$(command -v gcloud)" ]; then
+  echo "yes" | "$HOME"/.google-cloud-sdk/bin/gcloud components update
+fi
+
+echo "System Upgrades Complete" >&2
 exit 0

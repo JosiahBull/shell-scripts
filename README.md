@@ -1,3 +1,3 @@
 # Shell Scripts
 
-A small collection of scripts written for linux to make my life easier.
+A small collection of scripts written for Linux/MacOS to make my life easier.

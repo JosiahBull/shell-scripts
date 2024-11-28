@@ -1,10 +1,11 @@
-#!/bin/bash
-# FILEPATH: /home/josiah/.scripts/run-multiple-tests
-# Josiah Bull - 18/04/2024
+#!/usr/bin/env bash
+
+# Author: Josiah Bull <josiah.bull7@gmail.com>
+# License: MIT/Apache-2.0
+
 # This script is designed to wrap around gitlab-ci-debugger to enable quickly running
 # multiple CI tests back-to-back
 
-set -e
 set -o errexit -o pipefail -o noclobber -o nounset
 
 RED='\033[0;31m'

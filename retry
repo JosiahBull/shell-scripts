@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
+
 # Author: Josiah Bull <josiah.bull7@gmail.com>
+# License: MIT/Apache-2.0
+
 # This script will retry the command directly following it until it exits with code 0.
 # I commonly use this for a case of trying to ssh into something until it succeeds.
+
 # Example:
 # retry ssh my_username@192.168.0.54 -p 22
+
+set -o errexit -o pipefail -o noclobber
 
 if [[ -z "${RETRY_TIME}" ]]; then
     __RETRY_TIME=5
@@ -18,6 +24,7 @@ else
 fi
 
 __COUNT=0
+# shellcheck disable=SC2294
 until eval "$@"; do
     sleep "${__RETRY_TIME}"
     __COUNT=$((__COUNT+1))
