@@ -7,66 +7,74 @@
 
 set -o errexit -o pipefail -o noclobber -o nounset
 
-if [ "$EUID" -ne 0 ]
-then
-  echo "Not running as root, attempting to elevate... Press Ctrl+C to cancel" >&2
-  sleep 2
-  if [ -x "$(command -v sudo)" ]; then
-    exec sudo -- "$0" "$@"
-  else
-    exec sudo su -s "$0" "$@"
-  fi
-fi
+current_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$current_dir"/functions.sh
+
+set_log "update-all"
 
 # Update System
 # Ubuntu
 if [ -f /etc/lsb-release ]; then
-  apt-get update
-  apt-get upgrade -y
-  apt-get dist-upgrade -y
-  apt-get autoremove -y
-  apt-get autoclean
+  cmd=("sudo" "apt-get" "update")
+  run_cmd_wrap "${cmd[@]}"
+  cmd=("sudo" "apt-get" "upgrade" "-y")
+  run_cmd_wrap "${cmd[@]}"
+  cmd=("sudo" "apt-get" "dist-upgrade" "-y")
+  run_cmd_wrap "${cmd[@]}"
+  cmd=("sudo" "apt-get" "autoremove" "-y")
+  run_cmd_wrap "${cmd[@]}"
+  cmd=("sudo" "apt-get" "autoclean")
+  run_cmd_wrap "${cmd[@]}"
 # Fedora
 elif [ -f /etc/fedora-release ]; then
-  dnf check-update
-  dnf upgrade --refresh -y
-  dnf autoremove -y
-  dnf clean all
+  cmd=("sudo" "dnf" "check-update")
+  run_cmd_wrap "${cmd[@]}"
+  cmd=("sudo" "dnf" "upgrade" "--refresh" "-y")
+  run_cmd_wrap "${cmd[@]}"
+  cmd=("sudo" "dnf" "autoremove" "-y")
+  run_cmd_wrap "${cmd[@]}"
+  cmd=("sudo" "dnf" "clean" "all")
+  run_cmd_wrap "${cmd[@]}"
 else
-  echo "Unsupported distribution" >&2
-  exit 1
+  exit_error "Unsupported distribution"
 fi
 
 # Update Snaps
-if [ -x "$(command -v snap)" ]; then
-  snap refresh
+if which snap &> /dev/null; then
+  cmd=("sudo" "snap" "refresh")
+  run_cmd_wrap "${cmd[@]}"
 fi
 
 # Update Flatpaks
-if [ -x "$(command -v flatpak)" ]; then
-  flatpak update
+if which flatpak &> /dev/null; then
+  cmd=("sudo" "flatpak" "update")
+  run_cmd_wrap "${cmd[@]}"
 fi
 
 # Update Pip
-if [ -x "$(command -v pip)" ]; then
-  pip install --upgrade pip
+if which pip &> /dev/null; then
+  cmd=("pip" "install" "--upgrade" "pip")
+  run_cmd_wrap "${cmd[@]}"
 fi
 
 # Update Rust
-if [ -x "$(command -v rustup)" ]; then
-  rustup update
-  cargo install-update -a
+if which rustup &> /dev/null; then
+  cmd=("rustup" "update")
+  run_cmd_wrap "${cmd[@]}"
+  cmd=("cargo" "install-update" "-a")
+  run_cmd_wrap "${cmd[@]}"
 fi
 
 # Update NPM Packages
-if [ -x "$(command -v npm)" ]; then
-  npm update -g
+if which npm &> /dev/null; then
+  cmd=("npm" "update" "-g")
+  run_cmd_wrap "${cmd[@]}"
 fi
 
 # Update Gcloud
-if [ -x "$(command -v gcloud)" ]; then
+if which gcloud &> /dev/null; then
+  debug_cmd "gcloud components update"
   echo "yes" | "$HOME"/.google-cloud-sdk/bin/gcloud components update
 fi
 
-echo "System Upgrades Complete" >&2
-exit 0
+exit_success
