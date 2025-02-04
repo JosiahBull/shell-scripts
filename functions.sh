@@ -38,23 +38,13 @@ debug_cmd() {
     debug "${yellow_c}>>>${gray_c} $*"
 }
 info() {
-    (>&2 echo -e "$log $*${current_c}")
-}
-info_progress() {
     (>&2 echo -e "${cyan_c}$log $*${current_c}")
-}
-info_complete() {
-    (>&2 echo -e "${green_c}$log $*${current_c}")
 }
 warn() {
     (>&2 echo -e "${yellow_c}$log $*${current_c}")
 }
 error() {
     (>&2 echo -e "${red_c}$log $*${current_c}")
-}
-
-println() {
-    echo -e "$@"
 }
 
 prepend_stdout() {
