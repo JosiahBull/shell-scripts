@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -o errexit -o pipefail -o noclobber -o nounset
+# set -o errexit -o pipefail -o noclobber -o nounset
 
 log="[$HOME/.scripts]"
 debug_on="${DEBUG_SCRIPTS:-true}"

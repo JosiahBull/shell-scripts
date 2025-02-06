@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Author: Josiah Bull <josiah.bull7@gmail.com>
 # License: MIT/Apache-2.0
@@ -7,11 +7,19 @@
 # Takes an optional argument to specify the path to the .env file, otherwise will recursively search
 # upwards from the current directory for a .env file.
 
-set -o errexit -o pipefail -o noclobber -o nounset
+# Usage:
+#   Source load_env [path_to_env_file]
 
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+set -o pipefail -o noclobber
+
+if [ -n "$ZSH_VERSION" ]; then
+  script_dir="$(cd "$(dirname "${(%):-%x}")" && pwd)"
+elif [ -n "$BASH_VERSION" ]; then
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+else
+  exit_error_source "Unsupported shell. Please use bash or zsh."
+fi
 source "$script_dir"/functions.sh
-
 
 set_log "load_env"
 
@@ -20,7 +28,7 @@ if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
   echo "Usage: load_env [path_to_env_file]"
   echo "Load environment variables from a .env file."
   echo "If no path is provided, the script will search for a .env file in the current directory and its parents."
-  exit_success
+  return 0
 fi
 
 # Check if an argument was provided
@@ -28,7 +36,8 @@ if [ $# -eq 1 ]; then
   if [ -f "$1" ]; then
     env_file="$1"
   else
-    exit_error "File not found: $1"
+    echo "File not found: $1"
+    return 1
   fi
 else
   debug "No argument provided, searching for nearest .env file."
@@ -44,7 +53,8 @@ else
     current_dir="$(dirname "$current_dir")"
   done
   if [ -z ${env_file+x} ]; then
-    exit_error ".env file not found."
+    echo ".env file not found."
+    return 1
   fi
 
   info "Using .env file: $env_file"
@@ -53,18 +63,20 @@ fi
 # Check if .env file exists
 while IFS= read -r line; do
   if [[ $line != \#* ]] && [[ -n $line ]]; then
-    IFS='=' read -r key value <<< "$line"
-    if [[ -z $key ]]; then
-      warn "Invalid .env file format, skipped line: $line"
-      continue
-    elif [[ -z $value ]]; then
-      warn "No value for key $key, unsetting $key"
-      unset "$key"
-      continue
+    if [[ $line == *=* ]]; then
+      key="${line%%=*}"
+      value="${line#*=}"
+
+      # If value is not present, unset the variable
+      if [ -z "$value" ]; then
+        warn "Unsetting variable: $key"
+        unset "$key"
+      else
+        export "$key"="$value"
+      fi
     fi
-    export "$key=$value"
   fi
 done < "$env_file"
 
 info ".env file loaded successfully."
-exit_success
+return 0
