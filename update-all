@@ -51,10 +51,13 @@ if which flatpak &> /dev/null; then
   run_cmd_wrap "${cmd[@]}"
 fi
 
-# Update Pip
-if which pip &> /dev/null; then
+# Update Pip if not externally managed, by checking if /usr/lib/python3.12/EXTERNALLY-MANAGED exists
+externally_managed_exists=$(find /usr/lib/ -type f -name "EXTERNALLY-MANAGED" | wc -l)
+if [ "$externally_managed_exists" -eq 0 ]; then
   cmd=("pip" "install" "--upgrade" "pip")
   run_cmd_wrap "${cmd[@]}"
+else
+  debug "Pip is externally managed, skipping update"
 fi
 
 # Update Rust

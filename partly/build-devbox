@@ -9,7 +9,7 @@ DOCKER_USER="robot\$devbox"
 DOCKER_PASS="$(cat ~/.docker/.env)"
 DEVBOX_CONTAINER_NAME="devbox_$(whoami)-devbox-1"
 BUILDBOX_IMAGE_NAME="harbor.partly.pro/partly/buildbox:latest"
-BUILD_DIR="$HOME/Documents/partly"
+BUILD_DIR="$HOME/Documents/partlythird"
 
 echo "Starting devbox reset..." >&2
 
