@@ -39,6 +39,16 @@ else
   exit_error "Unsupported distribution"
 fi
 
+# Update device firmware
+if [ -f /usr/bin/fwupdmgr ]; then
+  cmd=("sudo" "fwupdmgr" "refresh")
+  run_cmd_wrap "${cmd[@]}"
+  cmd=("sudo" "fwupdmgr" "update" "--no-reboot-check" "--assume-yes")
+  run_cmd_wrap "${cmd[@]}"
+else
+  warn "fwupdmgr not found, skipping firmware update"
+fi
+
 # Update Snaps
 if which snap &> /dev/null; then
   cmd=("sudo" "snap" "refresh")
