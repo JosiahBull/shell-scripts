@@ -41,7 +41,7 @@ fi
 
 # Update device firmware
 if [ -f /usr/bin/fwupdmgr ]; then
-  cmd=("sudo" "fwupdmgr" "refresh")
+  cmd=("sudo" "fwupdmgr" "refresh" "--force")
   run_cmd_wrap "${cmd[@]}"
   cmd=("sudo" "fwupdmgr" "update" "--no-reboot-check" "--assume-yes")
   run_cmd_wrap "${cmd[@]}"
@@ -80,6 +80,9 @@ fi
 
 # Update NPM Packages
 if which npm &> /dev/null; then
+  cmd=("npm" "install" "-g" "npm@latest")
+  run_cmd_wrap "${cmd[@]}"
+
   cmd=("npm" "update" "-g")
   run_cmd_wrap "${cmd[@]}"
 fi
